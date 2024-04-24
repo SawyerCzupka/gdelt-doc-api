@@ -1,6 +1,6 @@
 from typing import Optional, List, Union, Tuple
 from string import ascii_lowercase, digits
-import urllib3
+from urllib import parse
 
 Filter = Union[List[str], str]
 
@@ -225,7 +225,7 @@ class Filters:
         """
         if type(keywords) == str:
             # return f'"{keywords}" '
-            return urllib3.parse.quote(keywords)
+            return parse.quote(keywords)
 
         else:
             return (
