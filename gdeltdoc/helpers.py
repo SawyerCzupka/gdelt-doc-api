@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 
 
 def load_json(json_message, max_recursion_depth: int = 100, recursion_depth: int = 0):
@@ -13,7 +14,7 @@ def load_json(json_message, max_recursion_depth: int = 100, recursion_depth: int
     """
     try:
         result = json.loads(json_message)
-    except Exception as e:
+    except JSONDecodeError as e:
         if recursion_depth >= max_recursion_depth:
             raise ValueError("Max Recursion depth is reached. JSON can´t be parsed!")
         # Find the offending character index:
@@ -22,8 +23,14 @@ def load_json(json_message, max_recursion_depth: int = 100, recursion_depth: int
         if isinstance(json_message, bytes):
             json_message.decode("utf-8")
         json_message = list(json_message)
-        json_message[idx_to_replace] = ' '
-        new_message = ''.join(str(m) for m in json_message)
-        return load_json(json_message=new_message, max_recursion_depth=max_recursion_depth,
-                         recursion_depth=recursion_depth+1)
+        json_message[idx_to_replace] = " "
+        new_message = "".join(str(m) for m in json_message)
+        return load_json(
+            json_message=new_message,
+            max_recursion_depth=max_recursion_depth,
+            recursion_depth=recursion_depth + 1,
+        )
+    except ValueError as e:
+        raise ValueError(f"Error parsing JSON: {e}")
+
     return result

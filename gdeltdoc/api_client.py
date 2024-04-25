@@ -1,13 +1,15 @@
-import requests
-import pandas as pd
-
-from gdeltdoc.filters import Filters
-
+import logging
 from typing import Dict
 
-from gdeltdoc.helpers import load_json
+import pandas as pd
+import requests
 
 from gdeltdoc._version import version
+from gdeltdoc.filters import Filters
+from gdeltdoc.helpers import load_json
+
+logger = logging.getLogger(__name__)
+
 
 class GdeltDoc:
     """
@@ -105,7 +107,9 @@ class GdeltDoc:
         """
         timeline = self._query(mode, filters.query_string)
 
-        results = {"datetime": [entry["date"] for entry in timeline["timeline"][0]["data"]]}
+        results = {
+            "datetime": [entry["date"] for entry in timeline["timeline"][0]["data"]]
+        }
 
         for series in timeline["timeline"]:
             results[series["series"]] = [entry["value"] for entry in series["data"]]
@@ -152,17 +156,25 @@ class GdeltDoc:
             "User-Agent": f"GDELT DOC Python API client {version} - https://github.com/alex9smith/gdelt-doc-api"
         }
 
-        response = requests.get(
-            f"https://api.gdeltproject.org/api/v2/doc/doc?query={query_string}&mode={mode}&format=json",
-            headers=headers
-        )
+        url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={query_string}&mode={mode}&format=json"
+
+        logger.info(f"Querying GDELT API with URL: {url}")
+
+        response = requests.get(url, headers=headers)
 
         if response.status_code not in [200, 202]:
-            raise ValueError("The gdelt api returned a non-successful statuscode. This is the response message: {}".
-                             format(response.text))
+            raise ValueError(
+                "The gdelt api returned a non-successful statuscode. This is the response message: {}".format(
+                    response.text
+                )
+            )
+
+        # logger.info(f"Response: {response.text}")
 
         # Response is text/html if it's an error and application/json if it's ok
         if "text/html" in response.headers["content-type"]:
-            raise ValueError(f"The query was not valid. The API error message was: {response.text.strip()}")
+            raise ValueError(
+                f"The query was not valid. The API error message was: {response.text.strip()}"
+            )
 
-        return load_json(response.content, self.max_depth_json_parsing)
+        return load_json(response.text, self.max_depth_json_parsing)
