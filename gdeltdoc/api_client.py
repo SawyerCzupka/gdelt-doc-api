@@ -77,6 +77,7 @@ class GdeltDoc:
         -------
         pd.DataFrame
             A pandas DataFrame of the articles returned from the API.
+            Has columns: `url`, `url_mobile`, `title`, `seendate`, `socialimage`, `domain`, `language`, `sourcecountry`.
         """
         articles = self._query("artlist", filters.query_string)
         if "articles" in articles:
@@ -158,7 +159,7 @@ class GdeltDoc:
 
         url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={query_string}&mode={mode}&format=json"
 
-        logger.info(f"Querying GDELT API with URL: {url}")
+        # logger.info(f"Querying GDELT API with URL: {url}")
 
         response = requests.get(url, headers=headers)
 
